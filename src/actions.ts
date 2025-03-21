@@ -1,8 +1,7 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { basehub } from "basehub";
-import { sendEvent } from "basehub/events";
-// import { sendEvent } from "../.basehub/events";
+import { sendEvent } from "../.basehub/events";
 
 export const server = {
   submitEmail: defineAction({
