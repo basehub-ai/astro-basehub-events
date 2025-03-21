@@ -1,11 +1,63 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { basehub } from "basehub";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const data = await basehub({ token: import.meta.env.BASEHUB_TOKEN }).query({
+  waitlist: {
+    input: {
+      ingestKey: true,
+      schema: true,
+    },
+  },
+});
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>My Website</title>
+  </head>
+  <body>
+    <form>
+      {
+        data.waitlist.input.schema.map(
+          ({ helpText, label, type, ...field }) => {
+            if (
+              type === "select" ||
+              type === "textarea" ||
+              type === "datetime"
+            ) {
+              return <div>not handled</div>;
+            }
+            return (
+              <div>
+                <label for={field.id}>{label}</label>
+                <input {...field} type={type} />
+                {helpText && <p>{helpText}</p>}
+              </div>
+            );
+          }
+        )
+      }
+      <button type="submit">Submit</button>
+      <div id="thank-you" style="display: none">Thank you!</div>
+    </form>
+  </body>
+</html>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const form = document.querySelector("form");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const { error } = await actions.submitEmail(formData);
+    if (!error) {
+      const thankYou = document.getElementById("thank-you");
+      if (thankYou) {
+        thankYou.style.display = "block";
+        form.reset();
+      }
+    }
+  });
+</script>
